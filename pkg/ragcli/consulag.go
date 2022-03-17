@@ -28,7 +28,12 @@ func GetConsulapps(appname, env, service string, c context.Context) []*api.Servi
 	if _, ok := services[strings.ToLower(service)]; ok {
 		entry := api.ServiceEntry{}
 		agservice := api.AgentService{}
-		agservice.Address = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, service, env)
+		if *regagentsets.AgentPort == "80" {
+			agservice.Address = fmt.Sprintf("127.0.0.1/proxy/%s/%s/", service, env)
+		} else {
+			agservice.Address = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, service, env)
+		}
+		// agservice.Address = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, service, env)
 		port, err := strconv.Atoi(*regagentsets.AgentPort)
 		if err != nil {
 			logger.Panic(err)

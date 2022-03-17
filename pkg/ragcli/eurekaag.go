@@ -98,14 +98,24 @@ func GetEuapps(appname, env string, c context.Context) EurekaApplications {
 		eurekainst := EurekaInstance{}
 		eurekainst.InstanceId = kname + strconv.Itoa(7979)
 		eurekainst.Status = "UP"
+		eurekainst.Overriddenstatus = "UP"
+		eurekainst.ActionType = "ADDED"
 		eurekainst.App = kname
 		eurekainst.VipAddress = kname
 		eurekainst.SecureVipAddress = kname
 		eurekainst.Port.Realport = agentport
 		eurekainst.HomePageUrl = "http://127.0.0.1:7979/eurekaagent"
 
-		eurekainst.HostName = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env) // "127.0.0.1:7979/" + kname + "/"
-		eurekainst.IpAddr = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)   //"127.0.0.1:7979/" + kname + "/"
+		if *regagentsets.AgentPort == "80" {
+			eurekainst.HostName = fmt.Sprintf("127.0.0.1/proxy/%s/%s/", kname, env)
+			eurekainst.IpAddr = fmt.Sprintf("127.0.0.1/proxy/%s/%s/", kname, env)
+		} else {
+			eurekainst.HostName = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)
+			eurekainst.IpAddr = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)
+		}
+
+		// eurekainst.HostName = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env) // "127.0.0.1:7979/" + kname + "/"
+		// eurekainst.IpAddr = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)   //"127.0.0.1:7979/" + kname + "/"
 		eurekainst.DataCenterInfo = struct {
 			Class string `json:"@class"`
 			Name  string `json:"name"`

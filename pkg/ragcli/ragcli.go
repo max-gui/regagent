@@ -28,7 +28,7 @@ func getAppsList(appname, service string, getReg getFromReg, c context.Context) 
 			// }
 			// servicesmap[strings.ToLower(service)] = nil
 			logger := logagent.Inst(c)
-			logger.WithField("misservice", appname).
+			logger.WithField("appmisservice", appname).
 				WithField("misservice", service).
 				Info("miss iac or service field")
 		}
