@@ -20,13 +20,13 @@ func main() {
 	flag.Parse()
 	// *logsets.Apppath
 	// log.Fatal(*Jsonlog)
-	bytes := confload.Load()
+	c := logagent.GetRootContextWithTrace()
+	bytes := confload.Load(c)
 	regagentsets.StartupInit(bytes)
 	// config := consulhelp.Getconfaml(*constset.ConfResPrefix, "redis", "redis-sentinel-proxy", *constset.Appenv)
 	// redisops.Url = config["url"].(string)
 	// redisops.Pwd = config["password"].(string)
 
-	c := logagent.GetRootContextWithTrace()
 	go consulhelp.StartWatch(*regagentsets.ConfWatchPrefix, true, c)
 
 	// if len(os.Args) > 2 {
