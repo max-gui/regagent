@@ -24,6 +24,31 @@ type EurekaApplications struct {
 	} `json:"applications"`
 }
 
+func (euinst EurekaInstance) String() string {
+	return fmt.Sprintf("name:%s,x-baggage-AF-env:%s,x-baggage-AF-region:%s,dc:%s,Address:%s,Port:%d,extaddress:%s,extport:%s",
+		euinst.App,
+		euinst.Metadata["x-baggage-AF-env"],
+		euinst.Metadata["x-baggage-AF-region"],
+		euinst.Metadata["dc"],
+		euinst.IpAddr,
+		euinst.Port.Realport,
+		euinst.Metadata["extaddress"],
+		euinst.Metadata["extport"])
+}
+
+// func (euinst EurekaInstance) Print() string {
+// 	var logmess = fmt.Sprintf("x-baggage-AF-env:%s,x-baggage-AF-region:%s,dc:%s,Address:%s,Port:%d,extaddress:%s,extport:%s",
+// 		euinst.Metadata["x-baggage-AF-env"],
+// 		euinst.Metadata["x-baggage-AF-region"],
+// 		euinst.Metadata["dc"],
+// 		euinst.IpAddr,
+// 		euinst.Port.Realport,
+// 		euinst.Metadata["extaddress"],
+// 		euinst.Metadata["extport"])
+
+// 	return logmess
+// }
+
 type EurekaInstance struct {
 	InstanceId       string `json:"instanceId"`
 	HostName         string `json:"hostName"`

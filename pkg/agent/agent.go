@@ -3,7 +3,6 @@ package agent
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -36,8 +35,8 @@ func Consulagent(c *gin.Context) {
 	} else {
 		fixstr := "/consulagent/" + appname + "/" + env + "/:8500"
 		target := *consulsets.Consul_host + strings.ReplaceAll(uri, fixstr, "")
-		log.Print(target)
-		log.Print("redirected")
+		logger.Print(target)
+		logger.Print("redirected")
 		remote, err := url.Parse(*consulsets.Consul_host)
 		if err != nil {
 			fmt.Println(err)
@@ -53,7 +52,7 @@ func Consulagent(c *gin.Context) {
 		// basicAuth := "Bearer " + base64.StdEncoding.EncodeToString([]byte(*regagentsets.Acltoken))
 		// c.Request.Header.Add("Authorization", basicAuth)
 		// if c.Request.Method == http.MethodPut {
-		log.Print(c.Request)
+		logger.Print(c.Request)
 		// }
 		proxy.ServeHTTP(c.Writer, c.Request)
 	}
