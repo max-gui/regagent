@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/max-gui/logagent/pkg/logagent"
@@ -98,19 +96,25 @@ type Eurekaappinfo struct {
 	Instance []EurekaInstance `json:"instance"`
 }
 
-func GetEuapps(appname, env string, c context.Context) EurekaApplications {
-	services := getAppsList(appname, "",
-		func(servicesmap map[string]interface{}) {
-			euapps := eurekapps(c)
-			for _, v := range euapps.Applications.Application {
+func GetEuapps(appname, env string, hostmode bool, c context.Context) EurekaApplications {
+	// services := getAppsList(appname, "",
+	// 	func(servicesmap map[string]interface{}) {
+	// 		servicearrmap := consulhelp.GetServices(c)
+	// 		for k := range servicearrmap {
+	// 			servicesmap[k] = struct{}{}
+	// 		}
 
-				servicesmap[strings.ToLower(v.Name)] = nil
-			}
-		}, c)
+	// 		euapps := eurekapps(c)
+	// 		for _, v := range euapps.Applications.Application {
+
+	// 			servicesmap[strings.ToLower(v.Name)] = nil
+	// 		}
+	// 	}, c)
+	services := getAppsList(appname, "", c)
 
 	// services := getAppsList(appname, "fake", c)
 
-	logger := logagent.Inst(c)
+	logger := logagent.InstArch(c)
 	euapps := EurekaApplications{}
 	euapps.Applications.Versions__delta = "1"
 	euapps.Applications.Apps__hashcode = "DOWN_2_STARTING_11_UP_618_"
@@ -130,13 +134,18 @@ func GetEuapps(appname, env string, c context.Context) EurekaApplications {
 		eurekainst.SecureVipAddress = kname
 		eurekainst.Port.Realport = agentport
 		eurekainst.HomePageUrl = "http://127.0.0.1:7979/eurekaagent"
-
-		if *regagentsets.AgentPort == "80" {
+		// *logsets.Appdc
+		// eurekainst.HostName = fmt.Sprintf("%s.%s.%s.%s.afproxy", appname, env, *logsets.Appdc, kname)
+		eurekainst.HostName = fmt.Sprintf("%s.afproxy", kname)
+		// if *regagentsets.AgentPort == "80" {
+		if !hostmode {
 			eurekainst.HostName = fmt.Sprintf("127.0.0.1/proxy/%s/%s/", kname, env)
 			eurekainst.IpAddr = fmt.Sprintf("127.0.0.1/proxy/%s/%s/", kname, env)
 		} else {
-			eurekainst.HostName = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)
-			eurekainst.IpAddr = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)
+			// 	eurekainst.HostName = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)
+			// 	eurekainst.IpAddr = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env)
+			eurekainst.HostName = fmt.Sprintf("%s.afproxy", kname)
+			eurekainst.IpAddr = fmt.Sprintf("%s.afproxy", kname)
 		}
 
 		// eurekainst.HostName = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, kname, env) // "127.0.0.1:7979/" + kname + "/"
@@ -186,7 +195,7 @@ func GetEuapps(appname, env string, c context.Context) EurekaApplications {
 }
 
 func tocall(method, url string, heads map[string]string, c context.Context) *http.Response {
-	logger := logagent.Inst(c)
+	logger := logagent.InstArch(c)
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
 			Timeout: 5 * time.Second,
@@ -208,12 +217,12 @@ func tocall(method, url string, heads map[string]string, c context.Context) *htt
 	return response
 }
 func eurekapps(c context.Context) EurekaApplications {
-	logger := logagent.Inst(c)
+	logger := logagent.InstArch(c)
 	resp := tocall("GET", *regagentsets.Eu_host+"/apps/", map[string]string{"Accept": "application/json"}, c)
 	// resp := tocall("GET", "http://user:eureka@eureka.kube.com/eureka/apps/"+servicename, map[string]string{"Accept": "application/json"})
-	resbody, err := ioutil.ReadAll(resp.Body)
+	resbody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 	var resjson = EurekaApplications{}
 	err = json.Unmarshal(resbody, &resjson)
@@ -228,12 +237,12 @@ func eurekapps(c context.Context) EurekaApplications {
 }
 
 func Eurekapp(servicename string, c context.Context) EurekaApplication {
-	logger := logagent.Inst(c)
+	logger := logagent.InstArch(c)
 	resp := tocall("GET", *regagentsets.Eu_host+"/apps/"+servicename, map[string]string{"Accept": "application/json"}, c)
 	// resp := tocall("GET", "http://user:eureka@eureka.kube.com/eureka/apps/"+servicename, map[string]string{"Accept": "application/json"})
-	resbody, err := ioutil.ReadAll(resp.Body)
+	resbody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 	var resjson = EurekaApplication{}
 	err = json.Unmarshal(resbody, &resjson)

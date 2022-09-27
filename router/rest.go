@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/max-gui/logagent/pkg/routerutil"
-	regagent "github.com/max-gui/regagent/pkg/agent"
 	// nethttp "net/http"
 )
 
@@ -17,8 +16,8 @@ func SetupRouter() *gin.Engine {
 	r.Use(routerutil.GinLogger())       //LoggerWithConfig())
 	r.Use(routerutil.GinErrorMiddle())  //ginErrorMiddle())
 
-	r.Any("/eurekaagent/:appname/:env/*path", regagent.Eurekaagent)
-	r.Any("/consulagent/:appname/:env/*path", regagent.Consulagent)
+	// r.Any("/eurekaagent/:appname/:env/*path", regagent.Eurekaagent)
+	// r.Any("/consulagent/:appname/:env/*path", regagent.Consulagent)
 	r.GET("/actuator/health", health)
 
 	return r

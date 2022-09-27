@@ -11,27 +11,58 @@ import (
 	"github.com/max-gui/regagent/pkg/regagentsets"
 )
 
-func GetConsulapps(appname, env, service string, c context.Context) []*api.ServiceEntry {
+func GetCatalogSevice(appname, env string, c context.Context) map[string][]string {
 
-	logger := logagent.Inst(c)
+	// services := getAppsList(appname, "",
+	// 	func(servicesmap map[string]interface{}) {
+	// 		servicesmap[strings.ToLower("")] = nil
+	// 		// return map[string]interface{}{strings.ToLower(service): nil}
+	// 	}, c)
 
-	services := getAppsList(appname, "",
-		func(servicesmap map[string]interface{}) {
-			servicesmap[strings.ToLower(service)] = nil
-			// return map[string]interface{}{strings.ToLower(service): nil}
-		}, c)
+	services := getAppsList(appname, "", c)
+
+	// services := getAppsList(appname, service, c)
+	// service := strings.Split(strings.TrimPrefix(uri, fixhealthstr), "?")[0]
+	catalogService := map[string][]string{}
+
+	for k := range services {
+		catalogService[k] = []string{}
+	}
+
+	return catalogService
+}
+
+func GetConsulapps(appname, env, service string, hostmode bool, c context.Context) []*api.ServiceEntry {
+
+	logger := logagent.InstArch(c)
+
+	// services := getAppsList(appname, "",
+	// 	func(servicesmap map[string]interface{}) {
+	// 		servicesmap[strings.ToLower(service)] = nil
+	// 		// return map[string]interface{}{strings.ToLower(service): nil}
+	// 	}, c)
+	services, isAllpath := GetAproveServices(appname, c)
+	// services := getAppsList(appname, "", c)
 
 	// services := getAppsList(appname, service, c)
 	// service := strings.Split(strings.TrimPrefix(uri, fixhealthstr), "?")[0]
 
 	consulapps := []*api.ServiceEntry{}
-	if _, ok := services[strings.ToLower(service)]; ok {
+	if _, ok := services[strings.ToLower(service)]; ok || isAllpath {
 		entry := api.ServiceEntry{}
 		agservice := api.AgentService{}
-		if *regagentsets.AgentPort == "80" {
+
+		// *logsets.Appdc
+		// eurekainst.HostName = fmt.Sprintf("%s.%s.%s.%s.afproxy", appname, env, *logsets.Appdc, kname)
+		// agservice.Address = fmt.Sprintf("%s.afproxy", service)
+		// agservice.Address = fmt.Sprintf("%s.%s.%s.%s.afproxy", appname, env, *logsets.Appdc, service)
+
+		// if *regagentsets.AgentPort == "80" {
+		if !hostmode {
 			agservice.Address = fmt.Sprintf("127.0.0.1/proxy/%s/%s/", service, env)
 		} else {
-			agservice.Address = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, service, env)
+			agservice.Address = fmt.Sprintf("%s.afproxy", service)
+			// agservice.Address = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, service, env)
 		}
 		// agservice.Address = fmt.Sprintf("127.0.0.1:%s/proxy/%s/%s/", *regagentsets.AgentPort, service, env)
 		port, err := strconv.Atoi(*regagentsets.AgentPort)
